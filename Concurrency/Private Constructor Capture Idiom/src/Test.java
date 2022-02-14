@@ -1,3 +1,4 @@
+// https://stackoverflow.com/questions/12028925/private-constructor-to-avoid-race-condition/12037506
 class SafePoint extends Thread {
 	private int x;
 	private int y;
@@ -10,13 +11,17 @@ class SafePoint extends Thread {
 	
 	
 	public SafePoint(SafePoint safePoint) {
-		this(safePoint.x, safePoint.y);
+//		int[] xy = safePoint.getXY();
+//		this(xy[0], xy[1]); <-- compile error
+		
+		// The idea is we get BOTH x AND y simultaneously (since getXY() is synchronized)
+		// We don't pass x and y e.g. like this(safePoint.x, safePoint.y), since either one of them or both may be changed by another thread at this time.
+		this(safePoint.getXY());
 	}
 	
-	// Public factory method (to be commented if needed)
-	public SafePoint cloneSafePoint(SafePoint originalSafePoint) {
-		int[] xy = originalSafePoint.getXY();
-		return new SafePoint(xy[0], xy[1]);
+	
+	private SafePoint(int[] xy) {
+		this(xy[0], xy[1]);
 	}
 	
 	
@@ -77,8 +82,8 @@ public class Test extends Thread {
 			@Override
 			public void run() {
 				System.out.println("Thread " + Thread.currentThread().getName() + " has just begun!");
-//				SafePoint copySafePoint = new SafePoint(originalSafePoint);
-				SafePoint copySafePoint = originalSafePoint.cloneSafePoint(originalSafePoint);
+				SafePoint copySafePoint = new SafePoint(originalSafePoint);
+//				SafePoint copySafePoint = originalSafePoint.cloneSafePoint(originalSafePoint);
 				System.out.println("Copy: " + copySafePoint);
 				System.out.println("Thread " + Thread.currentThread().getName() + " has just ended!");
 			}
@@ -86,11 +91,11 @@ public class Test extends Thread {
 	}
 }
 
-// Main thread is between first and second thread!
-// Thread Thread-1 has just begun!
-// Thread Thread-1 is sleeping!
-// Thread Thread-2 has just begun!
-// Original: [x=2, y=2]
-// Copy: [x=2, y=2]
-// Thread Thread-1 has just ended!
-// Thread Thread-2 has just ended!
+//Main thread is between first and second thread!
+//Thread Thread-1 has just begun!
+//Thread Thread-1 is sleeping!
+//Thread Thread-2 has just begun!
+//Original: [x=2, y=2]
+//Copy: [x=2, y=2]
+//Thread Thread-2 has just ended!
+//Thread Thread-1 has just ended!
