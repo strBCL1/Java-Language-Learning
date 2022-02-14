@@ -85,3 +85,12 @@ public class Test extends Thread {
 		}).start();
 	}
 }
+
+// Main thread is between first and second thread!
+// Thread Thread-1 has just begun!
+// Thread Thread-1 is sleeping!
+// Thread Thread-2 has just begun!
+// Original: [x=2, y=2]
+// Copy: [x=2, y=2]
+// Thread Thread-1 has just ended!
+// Thread Thread-2 has just ended!
